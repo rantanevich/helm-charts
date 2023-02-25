@@ -1,0 +1,175 @@
+suite: test deployment
+templates:
+- deployment.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: &component web
+  values:
+  - ../ci/deployment-values.yaml
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: apps/v1
+      kind: Deployment
+      name: example-web
+      namespace: *namespace
+  - equal:
+      path: spec.replicas
+      value: 1
+  - equal:
+      path: spec.selector.matchLabels
+      value: &selector_labels
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component
+  - equal:
+      path: spec.template.metadata.labels
+      value: *selector_labels
+  - equal:
+      path: spec.template.spec.nodeSelector
+      value:
+        kubernetes.io/os: linux
+  - equal:
+      path: spec.template.spec.affinity
+      value:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: security
+                  operator: In
+                  values:
+                  - S2
+              topologyKey: topology.kubernetes.io/zone
+  - equal:
+      path: spec.template.spec.tolerations
+      value:
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+  - equal:
+      path: spec.template.spec.volumes
+      value:
+      - name: kubexit
+        emptyDir: {}
+      - name: guard
+        emptyDir:
+          medium: Memory
+  - equal:
+      path: spec.template.spec.initContainers[0].name
+      value: kubexit
+  - equal:
+      path: spec.template.spec.initContainers[0].image
+      value: karlkfi/kubexit:0.3.2
+  - equal:
+      path: spec.template.spec.initContainers[0].imagePullPolicy
+      value: Always
+  - equal:
+      path: spec.template.spec.initContainers[0].command
+      value: ["cp", "/bin/kubexit", "/kubexit/kubexit"]
+  - equal:
+      path: spec.template.spec.initContainers[0].volumeMounts
+      value:
+      - name: kubexit
+        mountPath: /kubexit
+  - equal:
+      path: spec.template.spec.containers[0].name
+      value: web
+  - equal:
+      path: spec.template.spec.containers[0].image
+      value: traefik/whoami:v1.8.7
+  - equal:
+      path: spec.template.spec.containers[0].imagePullPolicy
+      value: IfNotPresent
+  - equal:
+      path: spec.template.spec.containers[0].env
+      value:
+      - name: JAVA_OPTS
+        value: -Xms4g -Xmx8g
+      - name: LOGGING_LEVEL_ROOT
+        value: info
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+  - equal:
+      path: spec.template.spec.containers[0].startupProbe
+      value:
+        httpGet:
+          path: /health
+          port: 80
+        failureThreshold: 30
+        periodSeconds: 10
+- it: &component worker
+  values:
+  - ../ci/deployment-values.yaml
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-worker
+  - equal:
+      path: spec.replicas
+      value: 3
+  - equal:
+      path: spec.selector.matchLabels
+      value: &selector_labels
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component
+  - equal:
+      path: spec.template.metadata.labels
+      value: *selector_labels
+  - equal:
+      path: spec.template.spec.affinity
+      value:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+  - equal:
+      path: spec.template.spec.hostname
+      value: worker
+  - equal:
+      path: spec.template.spec.topologySpreadConstraints
+      value:
+      - topologyKey: linux,kubernetes.io/arch
+        whenUnsatisfiable: ScheduleAnyway
+        maxSkew: 1
+  - equal:
+      path: spec.template.spec.automountServiceAccountToken
+      value: false
+  - equal:
+      path: spec.template.spec.containers[0].name
+      value: worker
+  - equal:
+      path: spec.template.spec.containers[0].name
+      value: worker
+  - equal:
+      path: spec.template.spec.containers[0].image
+      value: traefik/whoami:v1.8.7
+  - equal:
+      path: spec.template.spec.containers[0].imagePullPolicy
+      value: Always
+  - equal:
+      path: spec.template.spec.containers[0].livenessProbe
+      value:
+        exec:
+          command: ["cat", "/tmp/healthy"]
+        initialDelaySeconds: 15
+        periodSeconds: 10
+  - equal:
+      path: spec.template.spec.containers[0].resources
+      value:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
