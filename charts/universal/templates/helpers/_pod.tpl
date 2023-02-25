@@ -12,6 +12,7 @@
 {{ $fname }}:
 {{- toYaml $fvalue | nindent 0 }}
 {{- end }}
+{{- end }}
 {{- range $_, $fname := (list "automountServiceAccountToken" "enableServiceLinks") }}
 {{- if kindIs "bool" (get $val $fname) }}
 {{ $fname }}: {{ get $val $fname }}
