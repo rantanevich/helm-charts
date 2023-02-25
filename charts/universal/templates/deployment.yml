@@ -9,7 +9,7 @@ metadata:
     {{- include "helpers.app.labels" $ | nindent 4 }}
 spec:
   replicas: {{ .replicas | default 1 }}
-  {{- with .revisionHistoryLimit }}
+  {{- with (coalesce .revisionHistoryLimit $.Values.global.revisionHistoryLimit) }}
   revisionHistoryLimit: {{ . }}
   {{- end }}
   {{- with .strategy }}

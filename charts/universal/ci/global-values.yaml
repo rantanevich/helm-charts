@@ -1,0 +1,19 @@
+global:
+  revisionHistoryLimit: 10
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+
+image:
+  repository: traefik/whoami
+  tag: v1.8.7
+
+deployments:
+  web:
+    revisionHistoryLimit: 5
+    containers:
+      web: {}
+  worker:
+    enableServiceLinks: true
+    automountServiceAccountToken: true
+    containers:
+      worker: {}

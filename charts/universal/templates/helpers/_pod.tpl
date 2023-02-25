@@ -3,17 +3,29 @@
 {{- $val := .value }}
 {{- $component := .component }}
 {{- range $fname, $fvalue := $val }}
-{{- if has $fname (list "dnsPolicy" "hostname" "priority" "priorityClassName" "restartPolicy" "serviceAccountName" "terminationGracePeriodSeconds") }}
+{{- if has $fname (list "dnsPolicy" "hostNetwork" "hostname" "priority" "priorityClassName" "restartPolicy" "terminationGracePeriodSeconds") }}
 {{ $fname }}: {{ $fvalue }}
 {{- else if has $fname (list "affinity" "dnsConfig" "nodeSelector" "securityContext") }}
 {{ $fname }}:
   {{- toYaml $fvalue | nindent 2 }}
-{{- else if has $fname (list "imagePullSecrets" "tolerations" "topologySpreadConstraints" "volumes") }}
+{{- else if has $fname (list "tolerations" "topologySpreadConstraints" "volumes") }}
 {{ $fname }}:
 {{- toYaml $fvalue | nindent 0 }}
-{{- else if and (has $fname (list "automountServiceAccountToken" "enableServiceLinks" "hostNetwork")) (kindIs "bool" (index $val $fname)) }}
-{{ $fname }}: {{ $fvalue }}
 {{- end }}
+{{- end }}
+{{- range $_, $fname := (list "automountServiceAccountToken" "enableServiceLinks") }}
+{{- if kindIs "bool" (get $val $fname) }}
+{{ $fname }}: {{ get $val $fname }}
+{{- else if kindIs "bool" (get $.Values.global $fname) }}
+{{ $fname }}: {{ get $.Values.global $fname }}
+{{- end }}
+{{- end }}
+{{- with (coalesce $val.serviceAccountName $.Values.global.serviceAccountName) }}
+serviceAccountName: {{ . }}
+{{- end }}
+{{- with (coalesce $val.imagePullSecrets $.Values.image.pullSecrets) }}
+imagePullSecrets:
+{{- toYaml . | nindent 0 }}
 {{- end }}
 containers:
 {{- include "helpers.container" (dict "value" $val.containers "context" $) }}

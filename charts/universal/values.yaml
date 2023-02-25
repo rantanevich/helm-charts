@@ -1,8 +1,13 @@
 global: {}
+  # revisionHistoryLimit: 10
+  # automountServiceAccountToken: true
+  # enableServiceLinks: false
+  # serviceAccountName: default
 
 image:
   repository: ""
   tag: ""
   pullPolicy: IfNotPresent
+  pullSecrets: []
 
 deployments: {}
