@@ -9,7 +9,6 @@ image:
 deployments:
   web:
     replicas: 1
-    serviceAccountName: web
     nodeSelector:
       kubernetes.io/os: linux
     affinity:
@@ -71,7 +70,7 @@ deployments:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
           - matchExpressions:
-            - key: beta.kubernetes.io/os
+            - key: kubernetes.io/os
               operator: In
               values:
               - linux
