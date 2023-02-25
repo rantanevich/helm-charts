@@ -17,4 +17,3 @@ deployments:
     automountServiceAccountToken: true
     containers:
       worker: {}
-
