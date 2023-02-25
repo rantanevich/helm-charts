@@ -18,13 +18,19 @@ jobs:
     - name: Setup chart-testing
       uses: helm/chart-testing-action@v2.3.1
 
-    - name: Lint
+    - name: Setup helm-unittest
+      run: helm plugin install https://github.com/helm-unittest/helm-unittest --version=0.3.0
+
+    - name: chart-testing (lint)
       run: ct lint --target-branch ${{ github.base_ref }}
+
+    - name: Unit tests
+      run: helm unittest charts/universal
 
     - name: Create kind cluster
       uses: helm/kind-action@v1.5.0
       with:
         node_image: kindest/node:v1.22.15
 
-    - name: Test
+    - name: chart-testing (install)
       run: ct install --target-branch=${{ github.base_ref }} --helm-extra-args='--timeout 60s'

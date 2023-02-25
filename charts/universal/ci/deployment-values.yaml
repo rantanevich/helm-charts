@@ -39,6 +39,7 @@ deployments:
           mountPath: /kubexit
     containers:
       web:
+        imagePullPolicy: IfNotPresent
         env:
         - name: JAVA_OPTS
           value: -Xms4g -Xmx8g
