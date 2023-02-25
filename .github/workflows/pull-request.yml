@@ -27,4 +27,4 @@ jobs:
         node_image: kindest/node:v1.22.15
 
     - name: Test
-      run: ct install --target-branch ${{ github.base_ref }}
+      run: ct install --target-branch=${{ github.base_ref }} --helm-extra-args='--timeout 60s'

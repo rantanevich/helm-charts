@@ -1,0 +1,90 @@
+global:
+  enableServiceLinks: false
+
+image:
+  repository: traefik/whoami
+  tag: v1.8.7
+  pullPolicy: Always
+
+deployments:
+  web:
+    replicas: 1
+    nodeSelector:
+      kubernetes.io/os: linux
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S2
+            topologyKey: topology.kubernetes.io/zone
+    tolerations:
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+    volumes:
+    - name: kubexit
+      emptyDir: {}
+    - name: guard
+      emptyDir:
+        medium: Memory
+    initContainers:
+      kubexit:
+        image: karlkfi/kubexit:0.3.2
+        command: ["cp", "/bin/kubexit", "/kubexit/kubexit"]
+        volumeMounts:
+        - name: kubexit
+          mountPath: /kubexit
+    containers:
+      web:
+        env:
+        - name: JAVA_OPTS
+          value: -Xms4g -Xmx8g
+        - name: LOGGING_LEVEL_ROOT
+          value: info
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 80
+          failureThreshold: 30
+          periodSeconds: 10
+  worker:
+    replicas: 3
+    hostname: worker
+    automountServiceAccountToken: false
+    topologySpreadConstraints:
+    - topologyKey: linux,kubernetes.io/arch
+      whenUnsatisfiable: ScheduleAnyway
+      maxSkew: 1
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/os
+              operator: In
+              values:
+              - linux
+    containers:
+      worker:
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        livenessProbe:
+          exec:
+            command: ["cat", "/tmp/healthy"]
+          initialDelaySeconds: 15
+          periodSeconds: 10

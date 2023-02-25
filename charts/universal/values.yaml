@@ -1,0 +1,8 @@
+global: {}
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+deployments: {}
