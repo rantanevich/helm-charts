@@ -1,0 +1,28 @@
+{{- range $name, $_ := $.Values.deployments }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helpers.app.name" $ }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+spec:
+  replicas: {{ .replicas | default 1 }}
+  {{- with .revisionHistoryLimit }}
+  revisionHistoryLimit: {{ . }}
+  {{- end }}
+  {{- with .strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "helpers.app.selectorLabels" (dict "component" $name "context" $) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "helpers.app.selectorLabels" (dict "component" $name "context" $) | nindent 8 }}
+    spec:
+      {{- include "helpers.pod" (dict "component" $name "value" . "context" $) | nindent 6 }}
+{{- end }}
