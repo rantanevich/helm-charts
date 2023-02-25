@@ -15,4 +15,3 @@ app.kubernetes.io/component: {{ .component }}
 helm.sh/chart: {{ include "helpers.app.chart" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
-
