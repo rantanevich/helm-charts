@@ -1,5 +1,7 @@
 services:
   api:
+    annotations:
+      cloud.google.com/neg: '{"exposed_ports": {"8080":{}}}'
     type: LoadBalancer
     ports:
     - port: 8080
@@ -9,6 +11,11 @@ services:
     - port: 8793
       targetPort: 8793
   ui:
+    annotations:
+      cloud.google.com/backend-config: '{"ports": {
+          "api": "{{ $.Release.Name }}-web-api",
+          "ui": "{{ $.Release.Name }}-web-ui"
+        }}'
     type: NodePort
     ports:
     - port: 3000

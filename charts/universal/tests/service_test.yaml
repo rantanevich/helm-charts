@@ -22,6 +22,10 @@ tests:
       name: example-api
       namespace: *namespace
   - equal:
+      path: metadata.annotations
+      value:
+        cloud.google.com/neg: '{"exposed_ports": {"8080":{}}}'
+  - equal:
       path: spec.type
       value: LoadBalancer
   - equal:
@@ -64,6 +68,13 @@ tests:
   - containsDocument:
       <<: *document
       name: example-ui
+  - equal:
+      path: metadata.annotations
+      value:
+        cloud.google.com/backend-config: '{"ports": {
+          "api": "example-web-api",
+          "ui": "example-web-ui"
+        }}'
   - equal:
       path: spec.type
       value: NodePort

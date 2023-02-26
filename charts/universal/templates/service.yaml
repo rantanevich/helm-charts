@@ -9,7 +9,7 @@ metadata:
     {{- include "helpers.app.labels" $ | nindent 4 }}
   {{- with .annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- include "helpers.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}
 spec:
   type: {{ .type | default "ClusterIP" }}
