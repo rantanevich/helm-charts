@@ -1,0 +1,26 @@
+global:
+  revisionHistoryLimit: 10
+  automountServiceAccountToken: true
+  enableServiceLinks: false
+  serviceAccountName: whoami
+
+image:
+  repository: alpine
+  tag: latest
+  pullSecrets:
+  - name: dockerhub
+
+deployments:
+  api:
+    revisionHistoryLimit: 5
+    automountServiceAccountToken: false
+    imagePullSecrets: []
+    containers:
+      api:
+        image: whoami:v1.8.7
+  worker:
+    serviceAccountName: worker
+    enableServiceLinks: true
+    containers:
+      worker:
+        imagePullPolicy: Always

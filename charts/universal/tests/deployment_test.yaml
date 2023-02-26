@@ -5,16 +5,32 @@ release:
   name: &release_name example
   namespace: &namespace sandbox
 tests:
-- it: &component web
+- it: common
   values:
-  - ../ci/deployment-values.yaml
+  - values/deployment.yaml
+  asserts:
+  - hasDocuments:
+      count: 3
+- it: &component api
+  values:
+  - values/deployment.yaml
   documentIndex: 0
   asserts:
   - containsDocument: &document
       apiVersion: apps/v1
       kind: Deployment
-      name: example-web
+      name: example-api
       namespace: *namespace
+  - equal:
+      path: spec.replicas
+      value: 1
+  - equal:
+      path: spec.strategy
+      value:
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 1
+          maxUnavailable: 0
   - equal:
       path: spec.replicas
       value: 1
@@ -27,9 +43,239 @@ tests:
       path: spec.template.metadata.labels
       value: *selector_labels
   - equal:
+      path: spec.template.spec.dnsConfig
+      value:
+        nameservers:
+        - 10.96.0.10
+        searches:
+        - default.svc.cluster.local
+        - svc.cluster.local
+        - cluster.local
+        options:
+        - name: ndots
+          value: "5"
+  - equal:
+      path: spec.template.spec.dnsPolicy
+      value: None
+  - equal:
       path: spec.template.spec.nodeSelector
       value:
+        disktype: ssd
         kubernetes.io/os: linux
+  - equal:
+      path: spec.template.spec.tolerations
+      value:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+  - equal:
+      path: spec.template.spec.topologySpreadConstraints
+      value:
+      - maxSkew: 1
+        topologyKey: linux,kubernetes.io/arch
+        whenUnsatisfiable: ScheduleAnyway
+  - equal:
+      path: spec.template.spec.containers[0].name
+      value: api
+  - equal:
+      path: spec.template.spec.containers[0].image
+      value: api:1.2.3
+  - equal:
+      path: spec.template.spec.containers[0].imagePullPolicy
+      value: Always
+  - equal:
+      path: spec.template.spec.containers[0].ports
+      value:
+      - containerPort: 8080
+        protocol: TCP
+  - equal:
+      path: spec.template.spec.containers[0].startupProbe
+      value:
+        httpGet:
+          path: /ping
+          port: 8080
+        failureThreshold: 12
+        periodSeconds: 5
+  - equal:
+      path: spec.template.spec.containers[0].securityContext
+      value:
+        allowPrivilegeEscalation: false
+- it: &component worker
+  values:
+  - values/deployment.yaml
+  documentIndex: 2
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-worker
+  - equal:
+      path: spec.replicas
+      value: 5
+  - equal:
+      path: spec.strategy
+      value:
+        type: Recreate
+  - equal:
+      path: spec.selector.matchLabels
+      value: &selector_labels
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component
+  - equal:
+      path: spec.template.metadata.labels
+      value: *selector_labels
+  - equal:
+      path: spec.template.spec.hostNetwork
+      value: true
+  - equal:
+      path: spec.template.spec.dnsPolicy
+      value: ClusterFirstWithHostNet
+  - equal:
+      path: spec.template.spec.priorityClassName
+      value: Production
+  - equal:
+      path: spec.template.spec.terminationGracePeriodSeconds
+      value: 60
+  - equal:
+      path: spec.template.spec.affinity
+      value:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+  - equal:
+      path: spec.template.spec.volumes
+      value:
+      - name: git
+        emptyDir: {}
+  - equal:
+      path: spec.template.spec.imagePullSecrets
+      value:
+      - name: dockerhub
+  - equal:
+      path: spec.template.spec.initContainers[0].name
+      value: wait-postgres
+  - equal:
+      path: spec.template.spec.initContainers[0].image
+      value: postgres:14.5-alpine
+  - equal:
+      path: spec.template.spec.initContainers[0].command
+      value:
+      - sh
+      - -ec
+      - |
+        until (pg_isready -h example.org -p 5432 -U postgres); do
+          sleep 1
+        done
+  - equal:
+      path: spec.template.spec.initContainers[0].resources
+      value:
+        requests:
+          cpu: 50m
+          memory: 50Mi
+        limits:
+          cpu: 50m
+          memory: 50Mi
+  - equal:
+      path: spec.template.spec.containers[0].name
+      value: sql-proxy
+  - equal:
+      path: spec.template.spec.containers[0].image
+      value: gcr.io/cloudsql-docker/gce-proxy:1.30.1
+  - equal:
+      path: spec.template.spec.containers[0].command
+      value:
+      - /cloud_sql_proxy
+      - -ip_address_types=PRIVATE
+      - -instances=$(CLOUD_SQL_PROXY_CONNECTION)=tcp:$(CLOUD_SQL_PROXY_PORT)
+  - equal:
+      path: spec.template.spec.containers[0].env
+      value:
+      - name: CLOUD_SQL_PROXY_CONNECTION
+        valueFrom:
+          secretKeyRef:
+            name: example-mysql
+            key: connection_name
+      - name: CLOUD_SQL_PROXY_PORT
+        valueFrom:
+          secretKeyRef:
+            name: example-mysql
+            key: port
+  - equal:
+      path: spec.template.spec.containers[1].name
+      value: worker
+  - equal:
+      path: spec.template.spec.containers[1].image
+      value: worker:1.2.3
+  - equal:
+      path: spec.template.spec.containers[1].env
+      value:
+      - name: DB_HOST
+        value: 127.0.0.1
+      - name: DB_NAME
+        valueFrom:
+          secretKeyRef:
+            name: example-mysql
+            key: database
+      - name: DB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: example-mysql
+            key: password
+      - name: DB_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: example-mysql
+            key: username
+  - equal:
+      path: spec.template.spec.containers[1].volumeMounts
+      value:
+      - name: git
+        mountPath: /git
+  - equal:
+      path: spec.template.spec.containers[1].livenessProbe
+      value:
+        exec:
+          command: ["cat", "/tmp/healthy"]
+        initialDelaySeconds: 15
+        periodSeconds: 10
+  - equal:
+      path: spec.template.spec.containers[1].resources
+      value:
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+        requests:
+          cpu: 1000m
+          memory: 1Gi
+- it: &component ui
+  values:
+  - values/deployment.yaml
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-ui
+  - equal:
+      path: spec.replicas
+      value: 3
+  - equal:
+      path: spec.selector.matchLabels
+      value: &selector_labels
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component
+  - equal:
+      path: spec.template.metadata.labels
+      value: *selector_labels
+  - equal:
+      path: spec.template.spec.hostname
+      value: ui
+  - equal:
+      path: spec.template.spec.priority
+      value: 0
   - equal:
       path: spec.template.spec.affinity
       value:
@@ -45,131 +291,45 @@ tests:
                   - S2
               topologyKey: topology.kubernetes.io/zone
   - equal:
-      path: spec.template.spec.tolerations
+      path: spec.template.spec.securityContext
       value:
-      - key: node.kubernetes.io/unreachable
-        operator: Exists
-        effect: NoExecute
-  - equal:
-      path: spec.template.spec.volumes
-      value:
-      - name: kubexit
-        emptyDir: {}
-      - name: guard
-        emptyDir:
-          medium: Memory
-  - equal:
-      path: spec.template.spec.initContainers[0].name
-      value: kubexit
-  - equal:
-      path: spec.template.spec.initContainers[0].image
-      value: karlkfi/kubexit:0.3.2
-  - equal:
-      path: spec.template.spec.initContainers[0].imagePullPolicy
-      value: Always
-  - equal:
-      path: spec.template.spec.initContainers[0].command
-      value: ["cp", "/bin/kubexit", "/kubexit/kubexit"]
-  - equal:
-      path: spec.template.spec.initContainers[0].volumeMounts
-      value:
-      - name: kubexit
-        mountPath: /kubexit
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
   - equal:
       path: spec.template.spec.containers[0].name
-      value: web
+      value: ui
   - equal:
       path: spec.template.spec.containers[0].image
-      value: traefik/whoami:v1.8.7
+      value: ui:1.2.3
   - equal:
-      path: spec.template.spec.containers[0].imagePullPolicy
-      value: IfNotPresent
+      path: spec.template.spec.containers[0].command
+      value: ["printenv"]
   - equal:
-      path: spec.template.spec.containers[0].env
+      path: spec.template.spec.containers[0].args
       value:
-      - name: JAVA_OPTS
-        value: -Xms4g -Xmx8g
-      - name: LOGGING_LEVEL_ROOT
-        value: info
-      - name: POD_IP
-        valueFrom:
-          fieldRef:
-            fieldPath: status.podIP
+      - HOSTNAME
+      - KUBERNETES_PORT
   - equal:
-      path: spec.template.spec.containers[0].startupProbe
+      path: spec.template.spec.containers[0].lifecycle
+      value:
+        preStop:
+          exec:
+            command: ["/usr/sbin/nginx", "-s", "quit"]
+  - equal:
+      path: spec.template.spec.containers[0].readinessProbe
       value:
         httpGet:
-          path: /health
-          port: 80
-        failureThreshold: 30
-        periodSeconds: 10
-- it: &component worker
-  values:
-  - ../ci/deployment-values.yaml
-  documentIndex: 1
-  asserts:
-  - containsDocument:
-      <<: *document
-      name: example-worker
-  - equal:
-      path: spec.replicas
-      value: 3
-  - equal:
-      path: spec.selector.matchLabels
-      value: &selector_labels
-        app.kubernetes.io/name: *release_name
-        app.kubernetes.io/component: *component
-  - equal:
-      path: spec.template.metadata.labels
-      value: *selector_labels
-  - equal:
-      path: spec.template.spec.affinity
-      value:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/os
-                operator: In
-                values:
-                - linux
-  - equal:
-      path: spec.template.spec.hostname
-      value: worker
-  - equal:
-      path: spec.template.spec.topologySpreadConstraints
-      value:
-      - topologyKey: linux,kubernetes.io/arch
-        whenUnsatisfiable: ScheduleAnyway
-        maxSkew: 1
-  - equal:
-      path: spec.template.spec.automountServiceAccountToken
-      value: false
-  - equal:
-      path: spec.template.spec.containers[0].name
-      value: worker
-  - equal:
-      path: spec.template.spec.containers[0].name
-      value: worker
-  - equal:
-      path: spec.template.spec.containers[0].image
-      value: traefik/whoami:v1.8.7
-  - equal:
-      path: spec.template.spec.containers[0].imagePullPolicy
-      value: Always
-  - equal:
-      path: spec.template.spec.containers[0].livenessProbe
-      value:
-        exec:
-          command: ["cat", "/tmp/healthy"]
-        initialDelaySeconds: 15
-        periodSeconds: 10
+          path: /ping
+          port: 3000
+        initialDelaySeconds: 60
+        periodSeconds: 15
+        failureThreshold: 3
+        successThreshold: 1
+        timeoutSeconds: 5
   - equal:
       path: spec.template.spec.containers[0].resources
       value:
-        limits:
+        requests:
           cpu: 100m
           memory: 128Mi
-        requests:
-          cpu: 50m
-          memory: 64Mi

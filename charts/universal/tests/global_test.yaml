@@ -1,0 +1,131 @@
+suite: test global
+templates:
+- deployment.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values:
+  - values/global.yaml
+  asserts:
+  - hasDocuments:
+      count: 2
+- it: imagePullSecrets | global ([]), deploy (null), expect (null)
+  set:
+    image:
+      pullSecrets: []
+    deployments:
+      web: {}
+  asserts:
+  - isNull:
+      path: spec.template.spec.imagePullSecrets
+- it: imagePullSecrets | global ([]), deploy ([]), expect (null)
+  set:
+    image:
+      pullSecrets: []
+    deployments:
+      web:
+        imagePullSecrets: []
+  asserts:
+  - isNull:
+      path: spec.template.spec.imagePullSecrets
+- it: imagePullSecrets | global ([dockerhub]), deploy ([]), expect (null)
+  set:
+    image:
+      pullSecrets:
+      - name: dockerhub
+    deployments:
+      web:
+        imagePullSecrets: []
+  asserts:
+  - isNull:
+      path: spec.template.spec.imagePullSecrets
+- it: imagePullSecrets | global ([]), deploy ([dockerhub]), expect ([dockerhub])
+  set:
+    image:
+      pullSecrets: []
+    deployments:
+      web:
+        imagePullSecrets:
+        - name: dockerhub
+  asserts:
+  - equal:
+      path: spec.template.spec.imagePullSecrets
+      value:
+      - name: dockerhub
+- it: imagePullSecrets | global ([vmware]), deploy ([dockerhub]), expect ([dockerhub])
+  set:
+    image:
+      pullSecrets:
+      - name: vmware
+    deployments:
+      web:
+        imagePullSecrets:
+        - name: dockerhub
+  asserts:
+  - equal:
+      path: spec.template.spec.imagePullSecrets
+      value:
+      - name: dockerhub
+- it: imagePullSecrets | global ([dockerhub]), deploy (null), expect ([dockerhub])
+  set:
+    image:
+      pullSecrets:
+      - name: dockerhub
+    deployments:
+      web: {}
+  asserts:
+  - equal:
+      path: spec.template.spec.imagePullSecrets
+      value:
+      - name: dockerhub
+- it: &component api
+  values:
+  - values/global.yaml
+  documentIndex: 0
+  asserts:
+  - equal:
+      path: spec.revisionHistoryLimit
+      value: 5
+  - equal:
+      path: spec.template.spec.automountServiceAccountToken
+      value: false
+  - equal:
+      path: spec.template.spec.enableServiceLinks
+      value: false
+  - equal:
+      path: spec.template.spec.serviceAccountName
+      value: whoami
+  - isNull:
+      path: spec.template.spec.imagePullSecrets
+  - equal:
+      path: spec.template.spec.containers[0].image
+      value: whoami:v1.8.7
+- it: &component worker
+  values:
+  - values/global.yaml
+  documentIndex: 1
+  asserts:
+  - equal:
+      path: spec.revisionHistoryLimit
+      value: 10
+  - equal:
+      path: spec.template.spec.automountServiceAccountToken
+      value: true
+  - equal:
+      path: spec.template.spec.enableServiceLinks
+      value: true
+  - equal:
+      path: spec.template.spec.serviceAccountName
+      value: worker
+  - equal:
+      path: spec.template.spec.imagePullSecrets
+      value:
+      - name: dockerhub
+  - equal:
+      path: spec.template.spec.containers[0].image
+      value: alpine:latest
+  - equal:
+      path: spec.template.spec.containers[0].imagePullPolicy
+      value: Always
