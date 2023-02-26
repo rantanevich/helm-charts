@@ -41,12 +41,14 @@ deployments:
       web:
         imagePullPolicy: IfNotPresent
         env:
-          JAVA_OPTS: -Xms4g -Xmx8g
-          LOGGING_LEVEL_ROOT: info
-        envFromSecret:
-          example-auth:
-            AUTH_USERNAME: username
-            AUTH_PASSWORD: password
+        - name: JAVA_OPTS
+          value: -Xms4g -Xmx8g
+        - name: LOGGING_LEVEL_ROOT
+          value: info
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         startupProbe:
           httpGet:
             path: /health
