@@ -9,9 +9,25 @@
   {{- if has $fname (list "lifecycle" "livenessProbe" "readinessProbe" "resources" "securityContext" "startupProbe") }}
   {{ $fname }}:
     {{- toYaml $fvalue | nindent 4 }}
-  {{- else if has $fname (list "args" "command" "env" "ports" "volumeMounts") }}
+  {{- else if has $fname (list "args" "command" "ports" "volumeMounts") }}
   {{ $fname }}:
   {{- toYaml $fvalue | nindent 2 }}
+  {{- end }}
+  {{- end }}
+  {{- if or .env .envFromSecret }}
+  env:
+  {{- range $envName, $envValue := .env }}
+  - name: {{ $envName }}
+    value: {{ $envValue | quote }}
+  {{- end }}
+  {{- range $secretName, $items := .envFromSecret }}
+  {{- range $envName, $secretKey := $items }}
+  - name: {{ $envName }}
+    valueFrom:
+      secretKeyRef:
+        name: {{ $secretName }}
+        key: {{ $secretKey }}
+  {{- end }}
   {{- end }}
   {{- end }}
 {{- end }}

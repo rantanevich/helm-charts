@@ -23,9 +23,16 @@
 {{- with (coalesce $val.serviceAccountName $.Values.global.serviceAccountName) }}
 serviceAccountName: {{ . }}
 {{- end }}
-{{- with (coalesce $val.imagePullSecrets $.Values.image.pullSecrets) }}
+{{- if kindIs "slice" $val.imagePullSecrets }}
+{{- with $val.imagePullSecrets }}
 imagePullSecrets:
 {{- toYaml . | nindent 0 }}
+{{- end }}
+{{- else if kindIs "slice" $.Values.image.pullSecrets }}
+{{- with $.Values.image.pullSecrets }}
+imagePullSecrets:
+{{- toYaml . | nindent 0 }}
+{{- end }}
 {{- end }}
 containers:
 {{- include "helpers.container" (dict "value" $val.containers "context" $) }}
