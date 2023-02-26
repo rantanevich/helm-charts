@@ -1,6 +1,6 @@
 apiVersion: v2
 name: universal
-version: 0.0.4
+version: 0.1.0
 description: A universal Helm chart for deploying services to Kubernetes
 maintainers:
 - name: rantanevich
