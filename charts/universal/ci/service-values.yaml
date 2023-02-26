@@ -12,6 +12,11 @@ deployments:
 
 services:
   web:
+    annotations:
+      cloud.google.com/backend-config: '{"ports": {
+        "api": "{{ $.Release.Name }}-web-api",
+        "ui": "{{ $.Release.Name }}-web-ui"
+      }}'
     type: NodePort
     ports:
     - port: 80
