@@ -1,0 +1,15 @@
+services:
+  api:
+    type: LoadBalancer
+    ports:
+    - port: 8080
+      protocol: UDP
+  worker:
+    ports:
+    - port: 8793
+      targetPort: 8793
+  ui:
+    type: NodePort
+    ports:
+    - port: 3000
+      nodePort: 30443

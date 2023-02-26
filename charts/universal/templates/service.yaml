@@ -1,0 +1,32 @@
+{{- range $name, $_ := $.Values.services }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .type | default "ClusterIP" }}
+  selector:
+    {{- include "helpers.app.selectorLabels" (dict "component" $name "context" $) | nindent 4 }}
+  ports:
+  {{- range .ports }}
+  - port: {{ .port }}
+    protocol: {{ .protocol | default "TCP" }}
+    {{- with .name }}
+    name: {{ . }}
+    {{- end }}
+    {{- with .nodePort }}
+    nodePort: {{ . }}
+    {{- end }}
+    {{- with .targetPort }}
+    targetPort: {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}

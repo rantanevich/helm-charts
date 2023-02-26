@@ -11,3 +11,5 @@ image:
   pullSecrets: []
 
 deployments: {}
+
+services: {}

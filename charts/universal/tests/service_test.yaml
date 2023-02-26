@@ -1,0 +1,80 @@
+suite: test service
+templates:
+- service.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values:
+  - values/service.yaml
+  asserts:
+  - hasDocuments:
+      count: 3
+- it: &component api
+  values:
+  - values/service.yaml
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: v1
+      kind: Service
+      name: example-api
+      namespace: *namespace
+  - equal:
+      path: spec.type
+      value: LoadBalancer
+  - equal:
+      path: spec.ports
+      value:
+      - port: 8080
+        protocol: UDP
+  - equal:
+      path: spec.selector
+      value:
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component
+- it: &component worker
+  values:
+  - values/service.yaml
+  documentIndex: 2
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-worker
+  - equal:
+      path: spec.type
+      value: ClusterIP
+  - equal:
+      path: spec.ports
+      value:
+      - port: 8793
+        targetPort: 8793
+        protocol: TCP
+  - equal:
+      path: spec.selector
+      value:
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component
+- it: &component ui
+  values:
+  - values/service.yaml
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-ui
+  - equal:
+      path: spec.type
+      value: NodePort
+  - equal:
+      path: spec.ports
+      value:
+      - port: 3000
+        nodePort: 30443
+        protocol: TCP
+  - equal:
+      path: spec.selector
+      value:
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component
