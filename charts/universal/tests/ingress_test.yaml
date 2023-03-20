@@ -45,6 +45,11 @@ tests:
       <<: *document
       name: example-ui
   - equal:
+      path: metadata.annotations
+      value:
+        kubernetes.io/ingress.class: gce
+        cert-manager.io/cluster-issuer: letsencrypt
+  - equal:
       path: spec.rules
       value:
       - host: example.com

@@ -9,6 +9,9 @@ ingresses:
     tls:
       hosts: [*domain_name]
   ui:
+    annotations:
+      kubernetes.io/ingress.class: gce
+      cert-manager.io/cluster-issuer: letsencrypt
     rules:
     - host: *domain_name
       paths:
