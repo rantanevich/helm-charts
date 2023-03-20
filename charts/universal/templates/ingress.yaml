@@ -34,7 +34,8 @@ spec:
         backend:
           service:
             name: {{ include "helpers.app.name" $ }}-{{ .serviceName }}
-            port: {{ .servicePort }}
+            port:
+              number: {{ .servicePort }}
       {{- end }}
   {{- end }}
   {{- end }}

@@ -60,10 +60,12 @@ tests:
             backend:
               service:
                 name: example-web
-                port: 8080
+                port:
+                  number: 8080
           - path: /admin
             pathType: Prefix
             backend:
               service:
                 name: example-admin
-                port: 3000
+                port:
+                  number: 3000
