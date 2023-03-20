@@ -1,0 +1,48 @@
+{{- range $name, $_ := $.Values.ingresses }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- include "helpers.render" (dict "value" . "context" $) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .ingressClassName }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- with .defaultBackend }}
+  defaultBackend:
+    service:
+      name: {{ include "helpers.app.name" $ }}-{{ .serviceName }}
+      port:
+        number: {{ .servicePort }}
+  {{- end }}
+  {{- with .rules }}
+  rules:
+  {{- range . }}
+  - host: {{ .host }}
+    http:
+      paths:
+      {{- range .paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType | default "ImplementationSpecific" }}
+        backend:
+          service:
+            name: {{ include "helpers.app.name" $ }}-{{ .serviceName }}
+            port:
+              number: {{ .servicePort }}
+      {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- with .tls }}
+  tls:
+  - hosts:
+    {{- toYaml .hosts | nindent 4 }}
+    secretName: {{ include "helpers.app.name" $ }}-{{ $name }}-tls
+  {{- end }}
+{{- end }}
