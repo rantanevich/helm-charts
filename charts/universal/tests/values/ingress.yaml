@@ -1,0 +1,22 @@
+x-domain-name: &domain_name example.com
+
+ingresses:
+  api:
+    ingressClassName: gce
+    defaultBackend:
+      serviceName: api
+      servicePort: 3000
+    tls:
+      hosts: [*domain_name]
+  ui:
+    rules:
+    - host: *domain_name
+      paths:
+      - path: /
+        pathType: Prefix
+        serviceName: web
+        servicePort: 8080
+      - path: /admin
+        pathType: Prefix
+        serviceName: admin
+        servicePort: 3000

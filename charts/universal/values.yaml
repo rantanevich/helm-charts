@@ -13,3 +13,5 @@ image:
 deployments: {}
 
 services: {}
+
+ingresses: {}

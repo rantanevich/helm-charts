@@ -1,0 +1,64 @@
+suite: test service
+templates:
+- ingress.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values:
+  - values/ingress.yaml
+  asserts:
+  - hasDocuments:
+      count: 2
+- it: &component api
+  values:
+  - values/ingress.yaml
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      name: example-api
+      namespace: *namespace
+  - equal:
+      path: spec.ingressClassName
+      value: gce
+  - equal:
+      path: spec.defaultBackend
+      value:
+        service:
+          name: example-api
+          port:
+            number: 3000
+  - equal:
+      path: spec.tls
+      value:
+      - hosts: ["example.com"]
+        secretName: example-api-tls
+- it: &component ui
+  values:
+  - values/ingress.yaml
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-ui
+  - equal:
+      path: spec.rules
+      value:
+      - host: example.com
+        http:
+          paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: example-web
+                port: 8080
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: example-admin
+                port: 3000
