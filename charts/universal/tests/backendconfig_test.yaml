@@ -1,0 +1,84 @@
+suite: test backendconfig
+templates:
+- gcp/backendconfig.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values:
+  - values/backendconfig.yaml
+  asserts:
+  - hasDocuments:
+      count: 2
+- it: &component api
+  values:
+  - values/backendconfig.yaml
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: cloud.google.com/v1
+      kind: BackendConfig
+      name: example-api
+      namespace: *namespace
+  - equal:
+      path: spec.timeoutSec
+      value: 40
+  - equal:
+      path: spec.connectionDraining
+      value:
+        drainingTimeoutSec: 60
+  - equal:
+      path: spec.securityPolicy
+      value:
+        name: default
+  - equal:
+      path: spec.iap
+      value:
+        enabled: true
+        oauthclientCredentials:
+          secretName: example-iap
+  - equal:
+      path: spec.healthCheck
+      value:
+        type: HTTP
+        requestPath: /healthz
+        checkIntervalSec: 15
+        timeoutSec: 5
+        healthyThreshold: 1
+        unhealthyThreshold: 3
+  - equal:
+      path: spec.customRequestHeaders
+      value:
+        headers:
+        - X-Client-Region:{client_region}
+        - X-Client-City:{client_city}
+        - X-Client-CityLatLong:{client_city_lat_long}
+- it: &component ui
+  values:
+  - values/backendconfig.yaml
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-ui
+  - equal:
+      path: spec.cdn
+      value:
+        enabled: true
+        cacheMode: USE_ORIGIN_HEADERS
+        negativeCaching: true
+        negativeCachingPolicy:
+        - code: 404
+          ttl: 30
+        serveWhileStale: 86400
+  - equal:
+      path: spec.logging
+      value:
+        enable: true
+        sampleRate: 0.1
+  - equal:
+      path: spec.sessionAffinity
+      value:
+        affinityType: GENERATED_COOKIE
+        affinityCookieTtlSec: 50

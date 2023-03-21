@@ -1,0 +1,39 @@
+{{- range $name, $_ := $.Values.gcp.backendConfigs }}
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+spec:
+  {{- with .timeoutSec }}
+  timeoutSec: {{ . }}
+  {{- end }}
+  {{- with .drainingTimeoutSec }}
+  connectionDraining:
+    drainingTimeoutSec: {{ . }}
+  {{- end }}
+  {{- with .securityPolicy }}
+  securityPolicy:
+    name: {{ . }}
+  {{- end }}
+  {{- with .iap }}
+  iap:
+    enabled: {{ .enabled }}
+    oauthclientCredentials:
+      secretName: {{ .secretName }}
+  {{- end }}
+  {{- with .customRequestHeaders }}
+  customRequestHeaders:
+    headers:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- range $fname, $fvalue := . }}
+  {{- if has $fname (list "healthCheck" "logging" "sessionAffinity" "cdn") }}
+  {{ $fname }}:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}
