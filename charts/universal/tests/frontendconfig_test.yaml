@@ -1,0 +1,44 @@
+suite: test frontendconfig
+templates:
+- gcp/frontendconfig.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values:
+  - values/frontendconfig.yaml
+  asserts:
+  - hasDocuments:
+      count: 2
+- it: &component api
+  values:
+  - values/frontendconfig.yaml
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: networking.gke.io/v1beta1
+      kind: FrontendConfig
+      name: example-api
+      namespace: *namespace
+  - equal:
+      path: spec.sslPolicy
+      value: gke-ingress-ssl-policy
+  - equal:
+      path: spec.redirectToHttps
+      value:
+        enabled: true
+        responseCodeName: MOVED_PERMANENTLY_DEFAULT
+- it: &component ui
+  values:
+  - values/frontendconfig.yaml
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-ui
+  - equal:
+      path: spec.redirectToHttps
+      value:
+        enabled: false
+        responseCodeName: FOUND

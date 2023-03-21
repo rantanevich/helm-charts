@@ -15,3 +15,7 @@ deployments: {}
 services: {}
 
 ingresses: {}
+
+gcp:
+  backendConfigs: {}
+  frontendConfigs: {}

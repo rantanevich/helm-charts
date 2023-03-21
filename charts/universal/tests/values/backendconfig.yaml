@@ -1,0 +1,35 @@
+gcp:
+  backendConfigs:
+    api:
+      timeoutSec: 40
+      drainingTimeoutSec: 60
+      securityPolicy: default
+      iap:
+        enabled: true
+        secretName: example-iap
+      healthCheck:
+        type: HTTP
+        requestPath: /healthz
+        checkIntervalSec: 15
+        timeoutSec: 5
+        healthyThreshold: 1
+        unhealthyThreshold: 3
+      customRequestHeaders:
+      - X-Client-Region:{client_region}
+      - X-Client-City:{client_city}
+      - X-Client-CityLatLong:{client_city_lat_long}
+    ui:
+      cdn:
+        enabled: true
+        cacheMode: USE_ORIGIN_HEADERS
+        negativeCaching: true
+        negativeCachingPolicy:
+        - code: 404
+          ttl: 30
+        serveWhileStale: 86400
+      logging:
+        enable: true
+        sampleRate: 0.1
+      sessionAffinity:
+        affinityType: GENERATED_COOKIE
+        affinityCookieTtlSec: 50

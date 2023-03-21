@@ -1,0 +1,50 @@
+image:
+  repository: traefik/whoami
+  tag: v1.8.7
+
+deployments:
+  web:
+    containers:
+      web: {}
+
+services:
+  web:
+    annotations:
+      cloud.google.com/backend-config: '{"ports": {
+          "api": "{{ $.Release.Name }}-api",
+          "ui": "{{ $.Release.Name }}-ui"
+        }}'
+    type: NodePort
+    ports:
+    - name: api
+      port: 80
+    - name: ui
+      port: 3000
+
+gcp:
+  backendConfigs:
+    api:
+      healthCheck:
+        type: HTTP
+        requestPath: /healthz
+        checkIntervalSec: 15
+        timeoutSec: 5
+        healthyThreshold: 1
+        unhealthyThreshold: 3
+      customRequestHeaders:
+      - X-Client-Region:{client_region}
+      - X-Client-City:{client_city}
+      - X-Client-CityLatLong:{client_city_lat_long}
+    ui:
+      timeoutSec: 40
+      logging:
+        enable: true
+        sampleRate: 0.1
+      cdn:
+        enabled: true
+        cacheMode: USE_ORIGIN_HEADERS
+        negativeCaching: true
+        negativeCachingPolicy:
+        - code: 404
+          ttl: 30
+        serveWhileStale: 86400
