@@ -18,3 +18,4 @@ ingresses: {}
 
 gcp:
   backendConfigs: {}
+  frontendConfigs: {}

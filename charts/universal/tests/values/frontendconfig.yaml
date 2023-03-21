@@ -1,0 +1,10 @@
+gcp:
+  frontendConfigs:
+    api:
+      sslPolicy: gke-ingress-ssl-policy
+      redirectToHttps:
+        enabled: true
+    ui:
+      redirectToHttps:
+        enabled: false
+        responseCodeName: FOUND
