@@ -1,0 +1,11 @@
+image:
+  repository: busybox
+  tag: 1.35.0
+
+jobs:
+  migration:
+    backoffLimit: 1
+    restartPolicy: Never
+    containers:
+      migration:
+        command: ["echo", "bundle", "exec", "rake", "db:migrate"]

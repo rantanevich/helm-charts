@@ -1,0 +1,41 @@
+suite: test job
+templates:
+- job.yaml
+release:
+  name: example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values: &values
+  - values/job.yaml
+  asserts:
+  - hasDocuments:
+      count: 1
+- it: migration
+  values: *values
+  asserts:
+  - containsDocument:
+      apiVersion: batch/v1
+      kind: Job
+      name: example-migration
+      namespace: *namespace
+  - equal:
+      path: metadata.annotations
+      value:
+        helm.sh/hook: pre-install,pre-upgrade
+        helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+  - equal:
+      path: spec.backoffLimit
+      value: 1
+  - equal:
+      path: spec.template.spec.restartPolicy
+      value: Never
+  - equal:
+      path: spec.template.spec.containers[0].name
+      value: migration
+  - equal:
+      path: spec.template.spec.containers[0].image
+      value: busybox:1.35.0
+  - equal:
+      path: spec.template.spec.containers[0].command
+      value: ["bundle", "exec", "rake", "db:migrate"]

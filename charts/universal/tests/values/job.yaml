@@ -1,0 +1,14 @@
+image:
+  repository: busybox
+  tag: 1.35.0
+
+jobs:
+  migration:
+    annotations:
+      helm.sh/hook: pre-install,pre-upgrade
+      helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    backoffLimit: 1
+    restartPolicy: Never
+    containers:
+      migration:
+        command: ["bundle", "exec", "rake", "db:migrate"]

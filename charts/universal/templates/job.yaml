@@ -1,0 +1,16 @@
+{{- range $name, $_ := $.Values.jobs }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- include "helpers.render" (dict "value" . "context" $) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- include "helpers.job" (dict "component" $name "value" . "context" $) | nindent 2 }}
+{{- end }}
