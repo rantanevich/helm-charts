@@ -21,7 +21,7 @@
 {{- end }}
 {{- end }}
 {{- with (coalesce $val.serviceAccountName $.Values.global.serviceAccountName) }}
-serviceAccountName: {{ include "helpers.render" (dict "value" . "context" $) }}
+serviceAccountName: {{ include "helpers.app.name" $ }}-{{ . }}
 {{- end }}
 {{- if kindIs "slice" $val.imagePullSecrets }}
 {{- with $val.imagePullSecrets }}

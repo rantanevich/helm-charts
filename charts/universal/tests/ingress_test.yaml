@@ -2,18 +2,17 @@ suite: test ingress
 templates:
 - ingress.yaml
 release:
-  name: &release_name example
+  name: example
   namespace: &namespace sandbox
 tests:
 - it: common
-  values:
+  values: &values
   - values/ingress.yaml
   asserts:
   - hasDocuments:
       count: 2
-- it: &component api
-  values:
-  - values/ingress.yaml
+- it: api
+  values: *values
   documentIndex: 0
   asserts:
   - containsDocument: &document
@@ -36,9 +35,8 @@ tests:
       value:
       - hosts: ["example.com"]
         secretName: example-api-tls
-- it: &component ui
-  values:
-  - values/ingress.yaml
+- it: ui
+  values: *values
   documentIndex: 1
   asserts:
   - containsDocument:

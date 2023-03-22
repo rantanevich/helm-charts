@@ -2,11 +2,11 @@ suite: test global
 templates:
 - deployment.yaml
 release:
-  name: &release_name example
+  name: example
   namespace: &namespace sandbox
 tests:
 - it: common
-  values:
+  values: &values
   - values/global.yaml
   asserts:
   - hasDocuments:
@@ -80,9 +80,8 @@ tests:
       path: spec.template.spec.imagePullSecrets
       value:
       - name: dockerhub
-- it: &component api
-  values:
-  - values/global.yaml
+- it: api
+  values: *values
   documentIndex: 0
   asserts:
   - equal:
@@ -96,15 +95,14 @@ tests:
       value: false
   - equal:
       path: spec.template.spec.serviceAccountName
-      value: whoami
+      value: example-whoami
   - isNull:
       path: spec.template.spec.imagePullSecrets
   - equal:
       path: spec.template.spec.containers[0].image
       value: whoami:v1.8.7
-- it: &component worker
-  values:
-  - values/global.yaml
+- it: worker
+  values: *values
   documentIndex: 1
   asserts:
   - equal:

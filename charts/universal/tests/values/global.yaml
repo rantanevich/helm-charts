@@ -19,7 +19,7 @@ deployments:
       api:
         image: whoami:v1.8.7
   worker:
-    serviceAccountName: '{{ $.Release.Name }}-worker'
+    serviceAccountName: worker
     enableServiceLinks: true
     containers:
       worker:

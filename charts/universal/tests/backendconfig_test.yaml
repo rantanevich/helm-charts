@@ -2,18 +2,17 @@ suite: test backendconfig
 templates:
 - gcp/backendconfig.yaml
 release:
-  name: &release_name example
+  name: example
   namespace: &namespace sandbox
 tests:
 - it: common
-  values:
+  values: &values
   - values/backendconfig.yaml
   asserts:
   - hasDocuments:
       count: 2
-- it: &component api
-  values:
-  - values/backendconfig.yaml
+- it: api
+  values: *values
   documentIndex: 0
   asserts:
   - containsDocument: &document
@@ -54,9 +53,8 @@ tests:
         - X-Client-Region:{client_region}
         - X-Client-City:{client_city}
         - X-Client-CityLatLong:{client_city_lat_long}
-- it: &component ui
-  values:
-  - values/backendconfig.yaml
+- it: ui
+  values: *values
   documentIndex: 1
   asserts:
   - containsDocument:

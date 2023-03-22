@@ -2,7 +2,7 @@ suite: test frontendconfig
 templates:
 - gcp/frontendconfig.yaml
 release:
-  name: &release_name example
+  name: example
   namespace: &namespace sandbox
 tests:
 - it: common
@@ -12,7 +12,7 @@ tests:
   - hasDocuments:
       count: 2
 - it: &component api
-  values:
+  values: &values
   - values/frontendconfig.yaml
   documentIndex: 0
   asserts:
@@ -30,8 +30,7 @@ tests:
         enabled: true
         responseCodeName: MOVED_PERMANENTLY_DEFAULT
 - it: &component ui
-  values:
-  - values/frontendconfig.yaml
+  values: *values
   documentIndex: 1
   asserts:
   - containsDocument:

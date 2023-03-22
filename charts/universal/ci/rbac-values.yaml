@@ -4,7 +4,7 @@ image:
 
 deployments:
   web:
-    serviceAccountName: '{{ $.Release.Name }}-web'
+    serviceAccountName: web
     containers:
       web: {}
 
@@ -19,6 +19,6 @@ rbac:
         verbs: ["get", "watch", "list"]
   roleBindings:
     web:
-      roleName: '{{ $.Release.Name }}-web'
+      roleName: web
       serviceAccounts:
-      - '{{ $.Release.Name }}-web'
+      - web
