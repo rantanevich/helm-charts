@@ -1,0 +1,61 @@
+suite: test role
+templates:
+- role.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values:
+  - values/role.yaml
+  asserts:
+  - hasDocuments:
+      count: 2
+- it: &component api
+  values:
+  - values/role.yaml
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      name: example-api
+      namespace: *namespace
+  - equal:
+      path: rules
+      value:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["get", "watch", "list"]
+- it: &component worker
+  values:
+  - values/role.yaml
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-worker
+  - equal:
+      path: rules
+      value:
+      - apiGroups:
+        - ""
+        resources:
+        - configmaps
+        resourceNames:
+        - my-configmap
+        verbs:
+        - update
+        - get
+      - apiGroups:
+        - apps
+        resources:
+        - deployments
+        verbs:
+        - get
+        - list
+        - watch
+        - create
+        - update
+        - patch
+        - delete

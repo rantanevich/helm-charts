@@ -1,0 +1,19 @@
+{{- range $name, $omit := $.Values.rbac.roleBindings }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+subjects:
+{{- range .serviceAccounts }}
+- kind: ServiceAccount
+  name: {{ include "helpers.render" (dict "value" . "context" $) }}
+{{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ .roleKind | default "Role" }}
+  name: {{ include "helpers.render" (dict "value" .roleName "context" $) }}
+{{- end }}

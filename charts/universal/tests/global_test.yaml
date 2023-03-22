@@ -118,7 +118,7 @@ tests:
       value: true
   - equal:
       path: spec.template.spec.serviceAccountName
-      value: worker
+      value: example-worker
   - equal:
       path: spec.template.spec.imagePullSecrets
       value:
