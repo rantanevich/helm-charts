@@ -11,3 +11,9 @@ deployments:
 rbac:
   serviceAccounts:
     web: {}
+  roles:
+    web:
+      rules:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["get", "watch", "list"]

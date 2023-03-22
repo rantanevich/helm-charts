@@ -1,0 +1,16 @@
+rbac:
+  roles:
+    api:
+      rules:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["get", "watch", "list"]
+    worker:
+      rules:
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        resourceNames: ["my-configmap"]
+        verbs: ["update", "get"]
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
