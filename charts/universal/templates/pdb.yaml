@@ -1,0 +1,20 @@
+{{- range $name, $_ := $.Values.pdbs }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+spec:
+  {{- with .maxUnavailable }}
+  maxUnavailable: {{ . }}
+  {{- end }}
+  {{- with .minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "helpers.app.selectorLabels" (dict "component" $name "context" $) | nindent 6 }}
+{{- end }}
