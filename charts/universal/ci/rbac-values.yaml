@@ -17,3 +17,8 @@ rbac:
       - apiGroups: [""]
         resources: ["pods"]
         verbs: ["get", "watch", "list"]
+  roleBindings:
+    web:
+      roleName: '{{ $.Release.Name }}-web'
+      serviceAccounts:
+      - '{{ $.Release.Name }}-web'

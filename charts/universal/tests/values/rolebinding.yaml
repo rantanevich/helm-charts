@@ -1,0 +1,6 @@
+rbac:
+  roleBindings:
+    api:
+      roleName: '{{ $.Release.Name }}-api'
+      serviceAccounts:
+      - '{{ $.Release.Name }}-api'
