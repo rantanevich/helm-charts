@@ -1,0 +1,24 @@
+{{- range $name, $_ := $.Values.cronJobs }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- include "helpers.render" (dict "value" . "context" $) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- range $fname, $fvalue := . }}
+  {{- if has $fname (list "concurrencyPolicy" "failedJobsHistoryLimit" "startingDeadlineSeconds" "successfulJobsHistoryLimit" "timeZone") }}
+  {{ $fname }}: {{ $fvalue }}
+  {{- end }}
+  {{- end }}
+  schedule: {{ .schedule }}
+  jobTemplate:
+    spec:
+      {{- include "helpers.job" (dict "component" $name "value" . "context" $) | nindent 6 }}
+{{- end }}

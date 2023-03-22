@@ -1,0 +1,56 @@
+suite: test cronjob
+templates:
+- cronjob.yaml
+release:
+  name: example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values: &values
+  - values/cronjob.yaml
+  asserts:
+  - hasDocuments:
+      count: 1
+- it: cleaner
+  values: *values
+  asserts:
+  - containsDocument:
+      apiVersion: batch/v1
+      kind: CronJob
+      name: example-cleaner
+      namespace: *namespace
+  - equal:
+      path: spec.schedule
+      value: 10 * * * *
+  - equal:
+      path: spec.jobTemplate.spec.backoffLimit
+      value: 3
+  - equal:
+      path: spec.jobTemplate.spec.template.spec.restartPolicy
+      value: Never
+  - equal:
+      path: spec.jobTemplate.spec.template.spec.containers[0].name
+      value: cleaner
+  - equal:
+      path: spec.jobTemplate.spec.template.spec.containers[0].command
+      value: ["bundle", "exec", "rails", "runner", "InboxItemsCleaner.perform"]
+  - equal:
+      path: spec.jobTemplate.spec.template.spec.containers[0].env
+      value:
+      - name: LOGGING_LEVEL_ROOT
+        value: debug
+      - name: DB_NAME
+        valueFrom:
+          secretKeyRef:
+            name: example-mysql
+            key: database
+      - name: DB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: example-mysql
+            key: password
+      - name: DB_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: example-mysql
+            key: username

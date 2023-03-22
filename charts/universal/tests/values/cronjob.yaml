@@ -1,0 +1,19 @@
+image:
+  repository: busybox
+  tag: 1.35.0
+
+cronJobs:
+  cleaner:
+    schedule: "10 * * * *"
+    backoffLimit: 3
+    restartPolicy: Never
+    containers:
+      cleaner:
+        command: ["bundle", "exec", "rails", "runner", "InboxItemsCleaner.perform"]
+        env:
+          LOGGING_LEVEL_ROOT: debug
+        envFromSecret:
+          example-mysql:
+            DB_NAME: database
+            DB_USERNAME: username
+            DB_PASSWORD: password

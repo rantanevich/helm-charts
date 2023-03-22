@@ -18,6 +18,9 @@ ingresses: {}
 
 pdbs: {}
 
+jobs: {}
+cronJobs: {}
+
 rbac:
   serviceAccounts: {}
   roles: {}
