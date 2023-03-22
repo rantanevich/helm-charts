@@ -1,0 +1,14 @@
+image:
+  repository: busybox
+  tag: 1.35.0
+
+cronJobs:
+  cleaner:
+    schedule: 10 * * * *
+    backoffLimit: 1
+    restartPolicy: Never
+    containers:
+      cleaner:
+        command: ["echo", "bundle", "exec", "rails", "runner", "'InboxItems::Cleaner.call'"]
+        env:
+          LOGGING_LEVEL_ROOT: debug
