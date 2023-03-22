@@ -16,6 +16,9 @@ services: {}
 
 ingresses: {}
 
+rbac:
+  serviceAccounts: {}
+
 gcp:
   backendConfigs: {}
   frontendConfigs: {}
