@@ -16,6 +16,8 @@ services: {}
 
 ingresses: {}
 
+pdbs: {}
+
 rbac:
   serviceAccounts: {}
   roles: {}

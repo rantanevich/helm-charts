@@ -1,0 +1,45 @@
+suite: test pdb
+templates:
+- pdb.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values: &values
+  - values/pdb.yaml
+  asserts:
+  - hasDocuments:
+      count: 2
+- it: &component api
+  values: *values
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      name: example-api
+      namespace: *namespace
+  - equal:
+      path: spec.minAvailable
+      value: 2
+  - equal:
+      path: spec.selector.matchLabels
+      value:
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component
+- it: &component worker
+  values: *values
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-worker
+  - equal:
+      path: spec.maxUnavailable
+      value: 25%
+  - equal:
+      path: spec.selector.matchLabels
+      value:
+        app.kubernetes.io/name: *release_name
+        app.kubernetes.io/component: *component

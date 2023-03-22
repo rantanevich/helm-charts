@@ -1,0 +1,13 @@
+image:
+  repository: traefik/whoami
+  tag: v1.8.7
+
+deployments:
+  web:
+    replicas: 3
+    containers:
+      web: {}
+
+pdbs:
+  web:
+    minAvailable: 2

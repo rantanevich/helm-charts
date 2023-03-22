@@ -1,0 +1,5 @@
+pdbs:
+  api:
+    minAvailable: 2
+  worker:
+    maxUnavailable: 25%
