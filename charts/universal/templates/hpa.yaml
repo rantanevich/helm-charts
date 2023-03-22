@@ -1,0 +1,25 @@
+{{- range $name, $_ := $.Values.hpas }}
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  minReplicas: {{ .minReplicas }}
+  maxReplicas: {{ .maxReplicas }}
+  {{- with .metrics }}
+  metrics:
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with .behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

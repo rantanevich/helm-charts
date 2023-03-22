@@ -21,6 +21,8 @@ pdbs: {}
 jobs: {}
 cronJobs: {}
 
+hpas: {}
+
 rbac:
   serviceAccounts: {}
   roles: {}

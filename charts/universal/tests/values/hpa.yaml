@@ -1,0 +1,38 @@
+hpas:
+  api:
+    minReplicas: 1
+    maxReplicas: 10
+    metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 90
+    behavior:
+      scaleDown:
+        policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+  worker:
+    minReplicas: 2
+    maxReplicas: 20
+    metrics:
+    - type: Object
+      object:
+        metric:
+          name: rabbitmq_queue_messages_ready
+        describedObject:
+          apiVersion: v1
+          kind: Pod
+          name: rabbitmq-server-0
+        target:
+          type: Value
+          averageValue: 10
