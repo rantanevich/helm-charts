@@ -1,0 +1,39 @@
+image:
+  repository: traefik/whoami
+  tag: v1.8.7
+
+deployments:
+  api:
+    containers:
+      api: {}
+  worker:
+    containers:
+      worker: {}
+
+hpas:
+  api:
+    minReplicas: 1
+    maxReplicas: 10
+    metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  worker:
+    minReplicas: 2
+    maxReplicas: 20
+    metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    behavior:
+      scaleDown:
+        policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60

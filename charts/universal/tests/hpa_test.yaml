@@ -1,0 +1,90 @@
+suite: test hpa
+templates:
+- hpa.yaml
+release:
+  name: example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values: &values
+  - values/hpa.yaml
+  asserts:
+  - hasDocuments:
+      count: 2
+- it: api
+  values: *values
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: autoscaling/v2beta2
+      kind: HorizontalPodAutoscaler
+      name: example-api
+      namespace: *namespace
+  - equal:
+      path: spec.scaleTargetRef
+      value:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: example-api
+  - equal:
+      path: spec.minReplicas
+      value: 1
+  - equal:
+      path: spec.maxReplicas
+      value: 10
+  - equal:
+      path: spec.metrics
+      value:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 80
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 90
+  - equal:
+      path: spec.behavior
+      value:
+        scaleDown:
+          policies:
+          - type: Pods
+            value: 4
+            periodSeconds: 60
+- it: worker
+  values: *values
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-worker
+  - equal:
+      path: spec.scaleTargetRef
+      value:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: example-worker
+  - equal:
+      path: spec.minReplicas
+      value: 2
+  - equal:
+      path: spec.maxReplicas
+      value: 20
+  - equal:
+      path: spec.metrics
+      value:
+      - type: Object
+        object:
+          metric:
+            name: rabbitmq_queue_messages_ready
+          describedObject:
+            apiVersion: v1
+            kind: Pod
+            name: rabbitmq-server-0
+          target:
+            type: Value
+            averageValue: 10
