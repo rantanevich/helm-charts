@@ -96,7 +96,7 @@ tests:
       value: false
   - equal:
       path: spec.template.spec.serviceAccountName
-      value: whoami
+      value: example-whoami
   - isNull:
       path: spec.template.spec.imagePullSecrets
   - equal:

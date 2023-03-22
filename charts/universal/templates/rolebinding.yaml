@@ -10,10 +10,10 @@ metadata:
 subjects:
 {{- range .serviceAccounts }}
 - kind: ServiceAccount
-  name: {{ include "helpers.render" (dict "value" . "context" $) }}
+  name: {{ include "helpers.app.name" $ }}-{{ . }}
 {{- end }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: {{ .roleKind | default "Role" }}
-  name: {{ include "helpers.render" (dict "value" .roleName "context" $) }}
+  name: {{ include "helpers.app.name" $ }}-{{ .roleName }}
 {{- end }}
