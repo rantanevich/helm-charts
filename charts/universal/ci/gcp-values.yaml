@@ -21,7 +21,22 @@ services:
     - name: ui
       port: 3000
 
+ingresses:
+  web:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      external-dns.alpha.kubernetes.io/hostname: example.com
+      networking.gke.io/v1beta1.FrontendConfig: '{{ $.Release.Name }}-api'
+    defaultBackend:
+      serviceName: web
+      servicePort: 80
+
 gcp:
+  frontendConfigs:
+    api:
+      sslPolicy: gke-ingress-ssl-policy
+      redirectToHttps:
+        enabled: true
   backendConfigs:
     api:
       healthCheck:
