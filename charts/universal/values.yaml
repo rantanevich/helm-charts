@@ -18,6 +18,8 @@ ingresses: {}
 
 rbac:
   serviceAccounts: {}
+  roles: {}
+  roleBindings: {}
 
 gcp:
   backendConfigs: {}
