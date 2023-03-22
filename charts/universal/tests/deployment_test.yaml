@@ -6,14 +6,13 @@ release:
   namespace: &namespace sandbox
 tests:
 - it: common
-  values:
+  values: &values
   - values/deployment.yaml
   asserts:
   - hasDocuments:
       count: 3
 - it: &component api
-  values:
-  - values/deployment.yaml
+  values: *values
   documentIndex: 0
   asserts:
   - containsDocument: &document
@@ -101,8 +100,7 @@ tests:
       value:
         allowPrivilegeEscalation: false
 - it: &component worker
-  values:
-  - values/deployment.yaml
+  values: *values
   documentIndex: 2
   asserts:
   - containsDocument:
@@ -252,8 +250,7 @@ tests:
           cpu: 1000m
           memory: 1Gi
 - it: &component ui
-  values:
-  - values/deployment.yaml
+  values: *values
   documentIndex: 1
   asserts:
   - containsDocument:

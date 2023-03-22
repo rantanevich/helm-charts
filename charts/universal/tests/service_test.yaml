@@ -6,14 +6,13 @@ release:
   namespace: &namespace sandbox
 tests:
 - it: common
-  values:
+  values: &values
   - values/service.yaml
   asserts:
   - hasDocuments:
       count: 3
 - it: &component api
-  values:
-  - values/service.yaml
+  values: *values
   documentIndex: 0
   asserts:
   - containsDocument: &document
@@ -39,8 +38,7 @@ tests:
         app.kubernetes.io/name: *release_name
         app.kubernetes.io/component: *component
 - it: &component worker
-  values:
-  - values/service.yaml
+  values: *values
   documentIndex: 2
   asserts:
   - containsDocument:
@@ -61,8 +59,7 @@ tests:
         app.kubernetes.io/name: *release_name
         app.kubernetes.io/component: *component
 - it: &component ui
-  values:
-  - values/service.yaml
+  values: *values
   documentIndex: 1
   asserts:
   - containsDocument:

@@ -2,18 +2,17 @@ suite: test role
 templates:
 - role.yaml
 release:
-  name: &release_name example
+  name: example
   namespace: &namespace sandbox
 tests:
 - it: common
-  values:
+  values: &values
   - values/role.yaml
   asserts:
   - hasDocuments:
       count: 2
-- it: &component api
-  values:
-  - values/role.yaml
+- it: api
+  values: *values
   documentIndex: 0
   asserts:
   - containsDocument: &document
@@ -28,8 +27,7 @@ tests:
         resources: ["pods"]
         verbs: ["get", "watch", "list"]
 - it: &component worker
-  values:
-  - values/role.yaml
+  values: *values
   documentIndex: 1
   asserts:
   - containsDocument:
@@ -38,24 +36,10 @@ tests:
   - equal:
       path: rules
       value:
-      - apiGroups:
-        - ""
-        resources:
-        - configmaps
-        resourceNames:
-        - my-configmap
-        verbs:
-        - update
-        - get
-      - apiGroups:
-        - apps
-        resources:
-        - deployments
-        verbs:
-        - get
-        - list
-        - watch
-        - create
-        - update
-        - patch
-        - delete
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        resourceNames: ["my-configmap"]
+        verbs: ["update", "get"]
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

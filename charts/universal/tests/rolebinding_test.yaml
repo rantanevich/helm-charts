@@ -2,18 +2,17 @@ suite: test rolebinding
 templates:
 - rolebinding.yaml
 release:
-  name: &release_name example
+  name: example
   namespace: &namespace sandbox
 tests:
 - it: common
-  values:
+  values: &values
   - values/rolebinding.yaml
   asserts:
   - hasDocuments:
       count: 1
 - it: api
-  values:
-  - values/rolebinding.yaml
+  values: *values
   documentIndex: 0
   asserts:
   - containsDocument:
