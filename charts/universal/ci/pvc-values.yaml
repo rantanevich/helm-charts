@@ -1,0 +1,23 @@
+image:
+  repository: traefik/whoami
+  tag: v1.8.7
+
+# probably it makes sense to use map instead of list for volumes and volumeMounts
+deployments:
+  whoami:
+    volumes:
+    - name: logs
+      persistentVolumeClaim:
+        claimName: whoami-logs #### use "helpers.render"
+    containers:
+      web:
+        volumeMounts:
+        - name: logs
+          mountPath: /logs
+
+pvcs:
+  whoami-logs:
+    size: 1Gi
+    accessModes:
+    - ReadWriteOnce
+    storageClassName: standard

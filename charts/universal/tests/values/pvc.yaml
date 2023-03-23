@@ -1,0 +1,9 @@
+pvcs:
+  api:
+    size: 1Gi
+    volumeMode: Block
+    accessModes: ["ReadWriteOnce"]
+  worker:
+    size: 10Gi
+    accessModes: ["ReadWriteMany"]
+    storageClassName: standard-rwx
