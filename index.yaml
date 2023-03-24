@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   universal:
   - apiVersion: v2
+    created: "2023-03-24T10:28:07.289535387Z"
+    description: A universal Helm chart for deploying services to Kubernetes
+    digest: dc2ce54bddec8ab28ebf088b38384f7e1e2de358df32c3d269b83aa3542eb1ba
+    maintainers:
+    - email: r.antanevich@gmail.com
+      name: rantanevich
+    name: universal
+    urls:
+    - https://github.com/rantanevich/helm-charts/releases/download/universal-0.8.0/universal-0.8.0.tgz
+    version: 0.8.0
+  - apiVersion: v2
     created: "2023-03-22T18:33:28.298252273Z"
     description: A universal Helm chart for deploying services to Kubernetes
     digest: ef8175126cad8c0bbecf21c10d9cd2877cdf14bab781ab02d72b90f983b467a0
@@ -144,4 +155,4 @@ entries:
     urls:
     - https://github.com/rantanevich/helm-charts/releases/download/universal-0.0.1/universal-0.0.1.tgz
     version: 0.0.1
-generated: "2023-03-22T18:33:28.298551073Z"
+generated: "2023-03-24T10:28:07.289630091Z"
