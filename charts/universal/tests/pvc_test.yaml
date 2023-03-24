@@ -1,0 +1,47 @@
+suite: test pvc
+templates:
+- pvc.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values: &values
+  - values/pvc.yaml
+  asserts:
+  - hasDocuments:
+      count: 2
+- it: api
+  values: *values
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      name: example-api
+      namespace: *namespace
+  - equal:
+      path: spec.volumeMode
+      value: Block
+  - equal:
+      path: spec.accessModes
+      value: ["ReadWriteOnce"]
+  - equal:
+      path: spec.resources.requests.storage
+      value: 1Gi
+- it: worker
+  values: *values
+  documentIndex: 1
+  asserts:
+  - containsDocument:
+      <<: *document
+      name: example-worker
+  - equal:
+      path: spec.storageClassName
+      value: standard-rwx
+  - equal:
+      path: spec.accessModes
+      value: ["ReadWriteMany"]
+  - equal:
+      path: spec.resources.requests.storage
+      value: 10Gi

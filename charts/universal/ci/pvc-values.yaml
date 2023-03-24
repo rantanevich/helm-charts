@@ -1,0 +1,22 @@
+image:
+  repository: traefik/whoami
+  tag: v1.8.7
+
+deployments:
+  whoami:
+    volumes:
+      logs:
+        persistentVolumeClaim:
+          claimName: logs
+    containers:
+      web:
+        volumeMounts:
+          logs:
+            mountPath: /logs
+
+pvcs:
+  logs:
+    size: 1Gi
+    accessModes:
+    - ReadWriteOnce
+    storageClassName: standard

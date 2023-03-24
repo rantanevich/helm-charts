@@ -23,6 +23,8 @@ cronJobs: {}
 
 hpas: {}
 
+pvcs: {}
+
 rbac:
   serviceAccounts: {}
   roles: {}

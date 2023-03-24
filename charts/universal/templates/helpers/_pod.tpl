@@ -8,7 +8,7 @@
 {{- else if has $fname (list "affinity" "dnsConfig" "nodeSelector" "securityContext") }}
 {{ $fname }}:
   {{- toYaml $fvalue | nindent 2 }}
-{{- else if has $fname (list "tolerations" "topologySpreadConstraints" "volumes") }}
+{{- else if has $fname (list "tolerations" "topologySpreadConstraints") }}
 {{ $fname }}:
 {{- toYaml $fvalue | nindent 0 }}
 {{- end }}
@@ -22,6 +22,9 @@
 {{- end }}
 {{- with (coalesce $val.serviceAccountName $.Values.global.serviceAccountName) }}
 serviceAccountName: {{ include "helpers.app.name" $ }}-{{ . }}
+{{- end }}
+{{- with $val.volumes }}
+{{- include "helpers.volumes" (dict "value" . "context" $) }}
 {{- end }}
 {{- if kindIs "slice" $val.imagePullSecrets }}
 {{- with $val.imagePullSecrets }}
