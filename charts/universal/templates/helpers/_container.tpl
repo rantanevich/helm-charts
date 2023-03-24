@@ -6,7 +6,11 @@
   image: {{ .image | default (printf "%s:%s" $.Values.image.repository $.Values.image.tag) }}
   imagePullPolicy: {{ .imagePullPolicy | default $.Values.image.pullPolicy }}
   {{- with .volumeMounts }}
-  {{- include "helpers.volumeMounts" . | nindent 2 }}
+  volumeMounts:
+  {{- range $volumeName, $_ := . }}
+  - name: {{ $volumeName }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
   {{- range $fname, $fvalue := . }}
   {{- if has $fname (list "lifecycle" "livenessProbe" "readinessProbe" "resources" "securityContext" "startupProbe") }}
@@ -24,6 +28,7 @@
     value: {{ $envValue | quote }}
   {{- end }}
   {{- range $secretName, $items := .envFromSecret }}
+  {{- $secretName := ternary (printf "%s-%s" (include "helpers.app.name" $) $secretName) $secretName (hasKey $.Values.secrets $secretName) }}
   {{- range $envName, $secretKey := $items }}
   - name: {{ $envName }}
     valueFrom:
