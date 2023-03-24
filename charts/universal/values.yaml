@@ -25,6 +25,8 @@ hpas: {}
 
 pvcs: {}
 
+secrets: {}
+
 rbac:
   serviceAccounts: {}
   roles: {}
