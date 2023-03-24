@@ -149,6 +149,9 @@ tests:
       value:
       - name: git
         emptyDir: {}
+      - name: logs
+        persistentVolumeClaim:
+          claimName: example-logs
   - equal:
       path: spec.template.spec.imagePullSecrets
       value:
@@ -233,6 +236,8 @@ tests:
       value:
       - name: git
         mountPath: /git
+      - name: logs
+        mountPath: /logs
   - equal:
       path: spec.template.spec.containers[1].livenessProbe
       value:
