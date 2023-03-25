@@ -1,0 +1,21 @@
+{{- range $name, $_ := $.Values.configMaps }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "helpers.app.name" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "helpers.app.labels" $ | nindent 4 }}
+{{- if kindIs "bool" (get . "immutable") }}
+immutable: {{ .immutable }}
+{{- end }}
+{{- with .data }}
+data:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- with .binaryData }}
+binaryData:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}

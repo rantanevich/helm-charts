@@ -24,7 +24,14 @@
 serviceAccountName: {{ include "helpers.app.name" $ }}-{{ . }}
 {{- end }}
 {{- with $val.volumes }}
-{{- include "helpers.volumes" (dict "value" . "context" $) }}
+volumes:
+{{- range $volumeName, $_ := . }}
+{{- if and .secret (hasKey $.Values.secrets .secret.secretName) }}{{- $_ := set .secret "secretName" (printf "%s-%s" (include "helpers.app.name" $) .secret.secretName) }}{{- end }}
+{{- if and .configMap (hasKey $.Values.configMaps .configMap.name) }}{{- $_ := set .configMap "name" (printf "%s-%s" (include "helpers.app.name" $) .configMap.name) }}{{- end }}
+{{- if and .persistentVolumeClaim (hasKey $.Values.pvcs .persistentVolumeClaim.claimName) }}{{- $_ := set .persistentVolumeClaim "claimName" (printf "%s-%s" (include "helpers.app.name" $) .persistentVolumeClaim.claimName) }}{{- end }}
+- name: {{ $volumeName }}
+  {{- toYaml . | nindent 2 }}
+{{- end }}
 {{- end }}
 {{- if kindIs "slice" $val.imagePullSecrets }}
 {{- with $val.imagePullSecrets }}

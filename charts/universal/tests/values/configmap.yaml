@@ -1,0 +1,38 @@
+deployments:
+  web:
+    volumes:
+      game:
+        configMap:
+          name: game
+          items:
+          - key: game.properties
+            path: game.properties
+          - key: user-interface.properties
+            path: ui.properties
+    containers:
+      web:
+        image: busybox:latest
+        envFromConfigMap:
+          game:
+            PLAYER_INITIAL_LIVES: player_initial_lives
+            UI_PROPERTIES_FILE_NAME: ui_properties_file_name
+          world:
+            WORLD_LADSCAPE: unreal_material_hole
+        volumeMounts:
+          game:
+            mountPath: /etc/game
+            readOnly: true
+
+configMaps:
+  game:
+    immutable: true
+    data:
+      player_initial_lives: "3"
+      ui_properties_file_name: ui.properties
+      game.properties: |
+        enemy.types=aliens,monsters
+        player.maximum-lives=5
+      user-interface.properties: |
+        color.good=purple
+        color.bad=yellow
+        allow.textmode=true

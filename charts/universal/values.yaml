@@ -13,15 +13,16 @@ image:
 deployments: {}
 
 services: {}
-
 ingresses: {}
-
-pdbs: {}
 
 jobs: {}
 cronJobs: {}
 
+pdbs: {}
 hpas: {}
+
+secrets: {}
+configMaps: {}
 
 pvcs: {}
 
