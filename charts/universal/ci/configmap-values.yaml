@@ -1,0 +1,30 @@
+image:
+  repository: traefik/whoami
+  tag: v1.8.7
+
+deployments:
+  web:
+    volumes:
+      gcp:
+        configMap:
+          name: gcp
+    containers:
+      web:
+        envFromConfigMap:
+          redis:
+            REDIS_HOST: host
+            REDIS_PORT: port
+            REDIS_PASSWORD: auth_string
+        volumeMounts:
+          gcp:
+            mountPath: /google
+
+configMaps:
+  redis:
+    data:
+      host: 127.0.0.1
+      port: "6379"
+      auth_string: __placeholder__
+  gcp:
+    binaryData:
+      credentials.json: ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAic2FuZGJveCIsCiAgInByaXZhdGVfa2V5X2lkIjogImE3NDIwNDgzNjk2YWQ3Zjc3ODU2Y2RiNGE3ZTA0NWQzODQzYzU2NWQiLAogICJwcml2YXRlX2tleSI6ICJfX3BsYWNlaG9sZGVyX18iLAogICJjbGllbnRfZW1haWwiOiAiZXhhbXBsZUBzYW5kYm94LmlhbS5nc2VydmljZWFjY291bnQuY29tIiwKICAiY2xpZW50X2lkIjogIjE0MTkyMzQ2MTYzMjU5MDMyMDEwNyIsCiAgImF1dGhfdXJpIjogImh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbS9vL29hdXRoMi9hdXRoIiwKICAidG9rZW5fdXJpIjogImh0dHBzOi8vb2F1dGgyLmdvb2dsZWFwaXMuY29tL3Rva2VuIiwKICAiYXV0aF9wcm92aWRlcl94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92MS9jZXJ0cyIsCiAgImNsaWVudF94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL3JvYm90L3YxL21ldGFkYXRhL3g1MDkvZXhhbXBsZSU0MHNhbmRib3guaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iCn0K
