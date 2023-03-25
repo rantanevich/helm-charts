@@ -21,7 +21,7 @@
   {{- toYaml $fvalue | nindent 2 }}
   {{- end }}
   {{- end }}
-  {{- if or .env .envFromSecret }}
+  {{- if or .env .envFromSecret .envFromConfigMap }}
   env:
   {{- range $envName, $envValue := .env }}
   - name: {{ $envName }}
@@ -35,6 +35,16 @@
       secretKeyRef:
         name: {{ $secretName }}
         key: {{ $secretKey }}
+  {{- end }}
+  {{- end }}
+  {{- range $configName, $items := .envFromConfigMap }}
+  {{- $configName := ternary (printf "%s-%s" (include "helpers.app.name" $) $configName) $configName (hasKey $.Values.configMaps $configName) }}
+  {{- range $envName, $configKey := $items }}
+  - name: {{ $envName }}
+    valueFrom:
+      configMapKeyRef:
+        name: {{ $configName }}
+        key: {{ $configKey }}
   {{- end }}
   {{- end }}
   {{- end }}

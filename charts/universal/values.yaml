@@ -13,19 +13,18 @@ image:
 deployments: {}
 
 services: {}
-
 ingresses: {}
-
-pdbs: {}
 
 jobs: {}
 cronJobs: {}
 
+pdbs: {}
 hpas: {}
 
-pvcs: {}
-
 secrets: {}
+configMaps: {}
+
+pvcs: {}
 
 rbac:
   serviceAccounts: {}

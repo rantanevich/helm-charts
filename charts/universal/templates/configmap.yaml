@@ -1,13 +1,12 @@
-{{- range $name, $_ := $.Values.secrets }}
+{{- range $name, $_ := $.Values.configMaps }}
 ---
 apiVersion: v1
-kind: Secret
+kind: ConfigMap
 metadata:
   name: {{ include "helpers.app.name" $ }}-{{ $name }}
   namespace: {{ $.Release.Namespace }}
   labels:
     {{- include "helpers.app.labels" $ | nindent 4 }}
-type: {{ .type | default "Opaque" }}
 {{- if kindIs "bool" (get . "immutable") }}
 immutable: {{ .immutable }}
 {{- end }}
@@ -15,8 +14,8 @@ immutable: {{ .immutable }}
 data:
   {{- toYaml . | nindent 2 }}
 {{- end }}
-{{- with .stringData }}
-stringData:
+{{- with .binaryData }}
+binaryData:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- end }}

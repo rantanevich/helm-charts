@@ -1,0 +1,34 @@
+suite: test configmap
+templates:
+- configmap.yaml
+release:
+  name: &release_name example
+  namespace: &namespace sandbox
+tests:
+- it: common
+  values: &values
+  - values/configmap.yaml
+  asserts:
+  - hasDocuments:
+      count: 1
+- it: game
+  values: *values
+  documentIndex: 0
+  asserts:
+  - containsDocument: &document
+      apiVersion: v1
+      kind: ConfigMap
+      name: example-game
+      namespace: *namespace
+  - equal:
+      path: data
+      value:
+        player_initial_lives: "3"
+        ui_properties_file_name: ui.properties
+        game.properties: |
+          enemy.types=aliens,monsters
+          player.maximum-lives=5
+        user-interface.properties: |
+          color.good=purple
+          color.bad=yellow
+          allow.textmode=true
