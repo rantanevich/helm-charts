@@ -28,7 +28,7 @@
     value: {{ $envValue | quote }}
   {{- end }}
   {{- range $secretName, $items := .envFromSecret }}
-  {{- $secretName := ternary (printf "%s-%s" (include "helpers.app.name" $) $secretName) $secretName (hasKey $.Values.secrets $secretName) }}
+  {{- $secretName := ternary (printf "%s-%s" (include "helpers.app.name" $) $secretName) $secretName (has $secretName (concat list (keys $.Values.secrets) (keys $.Values.externalSecrets) | uniq)) }}
   {{- range $envName, $secretKey := $items }}
   - name: {{ $envName }}
     valueFrom:
