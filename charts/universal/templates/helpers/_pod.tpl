@@ -2,7 +2,13 @@
 {{- $ := .context }}
 {{- $val := .value }}
 {{- $component := .component }}
-{{- $releaseSecretNames := concat list (keys $.Values.secrets) (keys $.Values.externalSecrets) | uniq }}
+{{- $clusterExternalSecretNames := list }}
+{{- range $name, $_ := $.Values.clusterExternalSecrets }}
+{{- if not .externalSecretName }}
+{{- $clusterExternalSecretNames = append $clusterExternalSecretNames $name }}
+{{- end }}
+{{- end }}
+{{- $releaseSecretNames := concat list (keys $.Values.secrets) (keys $.Values.externalSecrets) $clusterExternalSecretNames | uniq }}
 {{- range $fname, $fvalue := $val }}
 {{- if has $fname (list "dnsPolicy" "hostNetwork" "hostname" "priority" "priorityClassName" "restartPolicy" "terminationGracePeriodSeconds") }}
 {{ $fname }}: {{ $fvalue }}

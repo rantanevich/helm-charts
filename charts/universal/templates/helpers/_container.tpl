@@ -1,7 +1,13 @@
 {{- define "helpers.container" }}
 {{- $ := .context }}
 {{- $val := .value }}
-{{- $releaseSecretNames := concat list (keys $.Values.secrets) (keys $.Values.externalSecrets) | uniq }}
+{{- $clusterExternalSecretNames := list }}
+{{- range $name, $_ := $.Values.clusterExternalSecrets }}
+{{- if not .externalSecretName }}
+{{- $clusterExternalSecretNames = append $clusterExternalSecretNames $name }}
+{{- end }}
+{{- end }}
+{{- $releaseSecretNames := concat list (keys $.Values.secrets) (keys $.Values.externalSecrets) $clusterExternalSecretNames | uniq }}
 {{- range $name, $_ := $val }}
 - name: {{ $name }}
   image: {{ .image | default (printf "%s:%s" $.Values.image.repository $.Values.image.tag) }}
