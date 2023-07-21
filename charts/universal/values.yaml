@@ -37,4 +37,5 @@ gcp:
 
 externalSecrets: {}
 secretStores: {}
+clusterExternalSecrets: {}
 clusterSecretStores: {}
