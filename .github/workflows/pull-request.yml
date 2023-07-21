@@ -37,11 +37,12 @@ jobs:
 
     - name: Install External Secrets
       run: |
-        helm install external-secrets external-secrets/external-secrets \
+        helm install external-secrets external-secrets \
           --repo https://charts.external-secrets.io \
           --version 0.9.1 \
           --namespace external-secrets \
           --create-namespace \
+          --wait \
           --set installCRDs=true
 
     - name: chart-testing (install)
