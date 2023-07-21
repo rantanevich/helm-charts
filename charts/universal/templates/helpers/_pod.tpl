@@ -2,6 +2,7 @@
 {{- $ := .context }}
 {{- $val := .value }}
 {{- $component := .component }}
+{{- $releaseSecretNames := concat list (keys $.Values.secrets) (keys $.Values.externalSecrets) | uniq }}
 {{- range $fname, $fvalue := $val }}
 {{- if has $fname (list "dnsPolicy" "hostNetwork" "hostname" "priority" "priorityClassName" "restartPolicy" "terminationGracePeriodSeconds") }}
 {{ $fname }}: {{ $fvalue }}
@@ -36,12 +37,16 @@ volumes:
 {{- if kindIs "slice" $val.imagePullSecrets }}
 {{- with $val.imagePullSecrets }}
 imagePullSecrets:
-{{- toYaml . | nindent 0 }}
+{{ range $secret := . }}
+- name: {{ ternary (printf "%s-%s" (include "helpers.app.name" $) $secret.name) $secret.name (has $secret.name $releaseSecretNames) }}
+{{- end }}
 {{- end }}
 {{- else if kindIs "slice" $.Values.image.pullSecrets }}
 {{- with $.Values.image.pullSecrets }}
 imagePullSecrets:
-{{- toYaml . | nindent 0 }}
+{{ range $secret := . }}
+- name: {{ ternary (printf "%s-%s" (include "helpers.app.name" $) $secret.name) $secret.name (has $secret.name $releaseSecretNames) }}
+{{- end }}
 {{- end }}
 {{- end }}
 containers:

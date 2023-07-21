@@ -1,6 +1,7 @@
 {{- define "helpers.container" }}
 {{- $ := .context }}
 {{- $val := .value }}
+{{- $releaseSecretNames := concat list (keys $.Values.secrets) (keys $.Values.externalSecrets) | uniq }}
 {{- range $name, $_ := $val }}
 - name: {{ $name }}
   image: {{ .image | default (printf "%s:%s" $.Values.image.repository $.Values.image.tag) }}
@@ -28,7 +29,7 @@
     value: {{ $envValue | quote }}
   {{- end }}
   {{- range $secretName, $items := .envFromSecret }}
-  {{- $secretName := ternary (printf "%s-%s" (include "helpers.app.name" $) $secretName) $secretName (has $secretName (concat list (keys $.Values.secrets) (keys $.Values.externalSecrets) | uniq)) }}
+  {{- $secretName := ternary (printf "%s-%s" (include "helpers.app.name" $) $secretName) $secretName (has $secretName $releaseSecretNames) }}
   {{- range $envName, $secretKey := $items }}
   - name: {{ $envName }}
     valueFrom:
