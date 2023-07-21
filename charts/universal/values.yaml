@@ -36,3 +36,4 @@ gcp:
   frontendConfigs: {}
 
 externalSecrets: {}
+secretStores: {}
