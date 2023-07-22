@@ -34,3 +34,8 @@ rbac:
 gcp:
   backendConfigs: {}
   frontendConfigs: {}
+
+externalSecrets: {}
+secretStores: {}
+clusterExternalSecrets: {}
+clusterSecretStores: {}
